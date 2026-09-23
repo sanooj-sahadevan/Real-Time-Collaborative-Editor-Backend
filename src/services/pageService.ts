@@ -7,7 +7,7 @@ export class PageService {
   private async assertMember(bookId: string, userId: string) {
     const book = await Book.findOne({
       _id: bookId,
-      $or: [{ ownerId: userId }, { collaborators: userId }],
+      $or: [{ ownerId: userId }, { collaborators: userId }, { isPublished: true }],
     });
     if (!book) throw new Error("Book not found or you do not have access");
     return book;
@@ -30,7 +30,7 @@ export class PageService {
     await book.populate("editors", "username email");
     return {
       pages: await this.repository.findByBook(bookId),
-      book: { _id: book.id, title: book.title, ownerId: book.ownerId.toString(), collaborators: book.collaborators, editors: book.editors, canEdit, editRequestStatus: editRequest?.status ?? null },
+      book: { _id: book.id, title: book.title, ownerId: book.ownerId.toString(), collaborators: book.collaborators, editors: book.editors, canEdit, isPublished: book.isPublished === true, editRequestStatus: editRequest?.status ?? null },
     };
   }
 

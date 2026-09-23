@@ -19,6 +19,7 @@ router.get("/all", expressCallback(controller.getAllBooks));
 router.get("/edit-requests/pending", expressCallback(controller.getPendingEditRequests));
 
 router.route("/:id").delete(expressCallback(controller.deleteBook));
+router.post("/:id/publish", expressCallback(controller.publishBook));
 router.post("/:id/edit-requests", expressCallback(controller.requestEdit));
 router.get("/:id/edit-requests", expressCallback(controller.getEditRequests));
 router.patch("/:id/edit-requests/:requestId", expressCallback(controller.resolveEditRequest));

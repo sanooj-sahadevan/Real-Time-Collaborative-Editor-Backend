@@ -18,7 +18,12 @@ export class BookService {
 
   async getAllBooks(userId: string) {
     const books = await this.repository.getAllBooks();
-    return books.map((book) => {
+    return books.filter((book) => {
+      const owner = book.ownerId as { _id?: { toString: () => string }; toString: () => string };
+      const ownerId = owner._id?.toString() ?? owner.toString();
+      const isCollaborator = book.collaborators.some((collaborator: { _id?: { toString: () => string }; toString: () => string }) => (collaborator._id?.toString() ?? collaborator.toString()) === userId);
+      return ownerId === userId || book.isPublished === true || isCollaborator;
+    }).map((book) => {
       const owner = book.ownerId as { _id?: { toString: () => string }; username?: string };
       const ownerId = owner._id?.toString() ?? book.ownerId.toString();
       const isOwner = ownerId === userId;
@@ -28,6 +33,7 @@ export class BookService {
         ...book.toObject(),
         ownerId,
         ownerName: owner.username ?? "Unknown author",
+        isPublished: book.isPublished === true,
         collaborators: book.collaborators.map((collaborator: { _id?: { toString: () => string }; username?: string; email?: string }) => ({
           _id: collaborator._id?.toString() ?? "",
           username: collaborator.username ?? "Collaborator",
@@ -50,6 +56,7 @@ export class BookService {
   async requestEdit(bookId: string, userId: string) {
     const book = await this.repository.getBookById(bookId);
     if (!book) throw new Error("Book not found");
+    if (!book.isPublished) throw new Error("This book is not published");
     if (book.ownerId.toString() === userId || book.editors.some((id: { toString: () => string }) => id.toString() === userId)) {
       throw new Error("You already have editing permission");
     }
@@ -58,6 +65,14 @@ export class BookService {
     book.editRequests.push({ userId, status: "pending", requestedAt: new Date() });
     await book.save();
     return book.editRequests[book.editRequests.length - 1];
+  }
+
+  async publishBook(bookId: string, ownerId: string) {
+    const book = await this.repository.getBookById(bookId);
+    if (!book || book.ownerId.toString() !== ownerId) throw new Error("Book not found or you are not the owner");
+    book.isPublished = true;
+    await book.save();
+    return book;
   }
 
   async getEditRequests(bookId: string, ownerId: string) {

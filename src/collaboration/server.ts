@@ -36,7 +36,7 @@ export const startCollaborationServer = (port: number) => {
         return connection.close(1008, "Unauthorized");
       }
       const page = await Page.findOne({ _id: pageId, bookId }).lean();
-      const book = await Book.findOne({ _id: bookId, $or: [{ ownerId: decoded.id }, { collaborators: decoded.id }] }).lean();
+      const book = await Book.findOne({ _id: bookId, $or: [{ ownerId: decoded.id }, { collaborators: decoded.id }, { isPublished: true }] }).lean();
       if (!page || !book) {
         console.warn(`[collaboration] rejected websocket request: page or book access denied for user ${decoded.id}`);
         return connection.close(1008, "Forbidden");

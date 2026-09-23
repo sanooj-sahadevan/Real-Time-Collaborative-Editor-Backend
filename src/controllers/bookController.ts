@@ -114,6 +114,13 @@ export class BookController {
     }
   };
 
+  publishBook = async (httpRequest: any) => {
+    const ownerId = httpRequest.user?.id as string | undefined;
+    if (!ownerId) return { statusCode: 401, body: { error: "Unauthorized" } };
+    try { return { statusCode: 200, body: { book: await this.service.publishBook(httpRequest.params.id, ownerId) } }; }
+    catch (error: unknown) { return { statusCode: 403, body: { error: error instanceof Error ? error.message : "Unable to publish book" } }; }
+  };
+
   requestEdit = async (httpRequest: any) => {
     const userId = httpRequest.user?.id as string | undefined;
     if (!userId) return { statusCode: 401, body: { error: "Unauthorized" } };

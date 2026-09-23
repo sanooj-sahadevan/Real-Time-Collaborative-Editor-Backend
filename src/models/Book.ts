@@ -19,6 +19,10 @@ const BookSchema = new Schema(
       ref: "User",
       required: true,
     },
+    isPublished: {
+      type: Boolean,
+      default: false,
+    },
     collaborators: [
       {
         type: Types.ObjectId,
