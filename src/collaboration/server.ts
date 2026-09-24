@@ -17,7 +17,6 @@ export const startCollaborationServer = (port: number) => {
     connection.on("message", bufferMessage);
     try {
       const url = new URL(requestUrl, `http://${request.headers.host || "localhost"}`);
-      console.log(`[collaboration] websocket request: ${url.pathname}`);
       const match = roomPattern.exec(url.pathname);
       const token = url.searchParams.get("token");
       if (!match || !token) {
@@ -50,7 +49,6 @@ export const startCollaborationServer = (port: number) => {
       connection.removeListener("message", bufferMessage);
       setupWSConnection(connection, request, { gc: true });
       pendingMessages.forEach((message) => connection.emit("message", message));
-      console.log(`[collaboration] websocket connected: ${url.pathname} user=${user.username} mode=${canEdit ? "edit" : "read-only"}`);
     } catch (error) {
       connection.removeListener("message", bufferMessage);
       console.error(`[collaboration] websocket authorization failed`, error);
